@@ -34,6 +34,12 @@ python query.py stats
 python query.py word belih
 ```
 
+### 翻譯機（離線使用）
+
+下載 `translator/` 資料夾，參考 `translator/INSTALL.md` 安裝說明。
+- Lite 版：純字典查詢，~150MB，任何電腦都能跑
+- AI 版：Ollama + Qwen 1.5B，~1.2GB，支援整篇文章翻譯
+
 ### 資料來源
 
 | 來源 | 授權 | 說明 |
@@ -78,6 +84,12 @@ python query.py stats
 python query.py word belih
 ```
 
+### Translator (Offline Use)
+
+Download the `translator/` folder and follow `translator/INSTALL.md`.
+- Lite edition: dictionary lookup only, ~150MB, runs on any machine
+- AI edition: Ollama + Qwen 1.5B, ~1.2GB, supports full-article translation
+
 ### Data Sources
 
 | Source | License | Notes |
@@ -100,3 +112,9 @@ License: CC BY-NC-SA 4.0
 **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**
 
 Full license text: [LICENSE](LICENSE)
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
