@@ -1,0 +1,39 @@
+# Database files (too large for git, provide via GitHub Releases)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Original XML source data (FormosanBank)
+formosanbank/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.bak
+
+# Environment
+.env
+venv/
+env/
