@@ -10,7 +10,7 @@ Sakizaya 語料庫查詢工具（全離線）
 import sqlite3, sys, os
 from pathlib import Path
 
-DB = Path(r"C:\Users\User\sakizaya_corpus\sakizaya.db")
+DB = Path(os.environ.get("SZY_DB", Path(__file__).parent / "sakizaya.db"))
 
 PARTICLES = {'a','ku','tu','nu','u','sa','i','ci','atu','sisa','caay','zayhan',
              'anu','hawsa','ancaay','han','haw','nida','kita','yaken','isu',
