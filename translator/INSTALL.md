@@ -1,31 +1,53 @@
 # 撒奇萊雅語翻譯機 安裝說明
 
+> **Windows 用戶只需要這幾個檔案（`.sh` 是 Mac/Linux 用的，忽略即可）：**
+> - `setup.bat` — 第一次使用前先執行一次
+> - `start.bat` — 啟動 **Lite 版**（字典查詢）
+> - `start_ai.bat` — 啟動 **AI 版**（需要 Ollama）
+
+> **Lite 版**：純字典查詢，不需 Ollama，任何電腦都能跑。
+> **AI 版**：需要安裝 Ollama（免費，本機執行，不需要網路 API）。
+
 ## Windows
+
+### Lite 版（推薦新手）
 
 1. 安裝 Python：https://python.org
    - 點「Download Python」，一路按「Next」
    - **安裝時記得勾選「Add Python to PATH」**
-2. 安裝 Ollama（**只有 AI 版才需要**）：https://ollama.ai
-   - 點「Download」，下載完執行安裝程式
-3. 雙擊 `setup.bat`（會自動安裝套件並下載 AI 模型，等幾分鐘）
-4. 安裝完成後：
-   - **Lite 版**（快速，不需 AI）：雙擊 `start.bat`
-   - **AI 版**（較慢，需要 Ollama）：雙擊 `start_ai.bat`
+2. 雙擊 `setup.bat`（會自動安裝所需套件）
+3. 安裝完成後雙擊 `start.bat`
+
+### AI 版（需要額外安裝 Ollama）
+
+1. 安裝 Python（同上）
+2. 安裝 Ollama：https://ollama.ai
+   - 點「Download」→ 下載 Windows 安裝程式 → 執行 → 一路 Next
+   - 安裝完成後 Ollama 會自動在背景執行（系統匣右下角有圖示）
+   - **安裝完不需要手動啟動**，它會自己跑
+3. 雙擊 `setup.bat`（會自動下載 AI 模型，**約 7GB**，視網速可能需要 20~60 分鐘）
+4. 安裝完成後雙擊 `start_ai.bat`
 
 ---
 
 ## Mac / Linux
 
-1. 安裝 Python：https://python.org
-   - 或用 Homebrew：`brew install python`
-2. 安裝 Ollama（**只有 AI 版才需要**）：https://ollama.ai
-3. 在終端機執行：
+### Lite 版
+
+1. 安裝 Python：https://python.org（或 `brew install python`）
+2. 在終端機執行：`sh setup.sh`
+3. 完成後：`sh start.sh`
+
+### AI 版
+
+1. 安裝 Python（同上）
+2. 安裝 Ollama：
    ```bash
-   sh setup.sh
+   curl -fsSL https://ollama.com/install.sh | sh
    ```
-4. 安裝完成後：
-   - **Lite 版**：`sh start.sh`
-   - **AI 版**：`sh start_ai.sh`
+   安裝後 Ollama 會在背景執行，不需要手動啟動。
+3. 執行 `sh setup.sh`（會自動下載 AI 模型）
+4. 完成後：`sh start_ai.sh`
 
 ---
 

@@ -23,7 +23,7 @@
 | 雙語句對（撒奇萊雅語 ↔ 中文）| 75,000+ | FormosanBank + szy.Wikipedia + ILRDF |
 | 詞彙條目 | 6,000+ | 含詞性標記與例句 |
 | `query.py` | — | 離線 CLI 查詢工具，無需網路 |
-| `skills/sakizaya/` | — | Claude AI 雙向翻譯技能模組 |
+| `translator/` | — | 圖形介面翻譯機（Lite + AI 版，詳見 [INSTALL.md](translator/INSTALL.md)）|
 
 ### 快速開始
 
@@ -36,9 +36,14 @@ python query.py word belih
 
 ### 翻譯機（離線使用）
 
-下載 `translator/` 資料夾，參考 `translator/INSTALL.md` 安裝說明。
-- Lite 版：純字典查詢，~150MB，任何電腦都能跑
-- AI 版：Ollama + Qwen 1.5B，~1.2GB，支援整篇文章翻譯
+**下載方式（推薦）：** 右上角 `Code` → `Download ZIP` → 解壓縮 → 進入 `translator/` 資料夾
+
+安裝說明：[translator/INSTALL.md](translator/INSTALL.md)
+
+| 版本 | 需求 | 大小 | 說明 |
+|------|------|------|------|
+| Lite | Python 3.10+ | ~150 MB | 純字典查詢，雙擊 `setup.bat` → `start.bat` |
+| AI | Python + Ollama | ~7 GB | LLM 翻譯，雙擊 `setup.bat` → `start_ai.bat` |
 
 ### 資料來源
 
@@ -73,7 +78,7 @@ https://github.com/LKCoffee/sakizaya-corpus
 | Parallel sentence pairs (Sakizaya ↔ Chinese) | 75,000+ | FormosanBank, szy.Wikipedia, ILRDF |
 | Lexicon entries | 6,000+ | With POS tags and usage examples |
 | `query.py` | — | Offline CLI query tool (no internet required) |
-| `skills/sakizaya/` | — | Claude AI bidirectional translation skill |
+| `translator/` | — | GUI translator app (Lite + AI edition, see [INSTALL.md](translator/INSTALL.md)) |
 
 ### Quick Start
 
@@ -86,9 +91,14 @@ python query.py word belih
 
 ### Translator (Offline Use)
 
-Download the `translator/` folder and follow `translator/INSTALL.md`.
-- Lite edition: dictionary lookup only, ~150MB, runs on any machine
-- AI edition: Ollama + Qwen 1.5B, ~1.2GB, supports full-article translation
+**Download:** Click `Code` → `Download ZIP` (top right) → unzip → open the `translator/` folder
+
+Setup guide: [translator/INSTALL.md](translator/INSTALL.md)
+
+| Edition | Requirements | Size | How to run |
+|---------|-------------|------|------------|
+| Lite | Python 3.10+ | ~150 MB | Dictionary lookup — run `setup.bat` → `start.bat` |
+| AI | Python + Ollama | ~7 GB | LLM translation — run `setup.bat` → `start_ai.bat` |
 
 ### Data Sources
 

@@ -9,7 +9,9 @@ import requests
 import json
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "qwen2.5:1.5b"
+# 預設用 qwen3.5:latest；可用環境變數 OLLAMA_MODEL 覆蓋（e.g., qwen2.5:1.5b）
+import os as _os
+MODEL = _os.environ.get("OLLAMA_MODEL", "qwen3.5:latest")
 
 
 def is_ollama_running() -> bool:
@@ -50,12 +52,25 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
     direction_label = "中文" if lang == "zh" else "撒奇萊雅語"
     target_label = "撒奇萊雅語" if lang == "zh" else "中文"
 
-    lines = [
-        "你是撒奇萊雅語翻譯助手。",
-    ]
+    if lang == "zh":
+        lines = [
+            "你是撒奇萊雅語（Sakizaya）翻譯專家。",
+            "撒奇萊雅語是台灣原住民族語言，ISO 639-3 代碼：szy。",
+            "你的任務：將中文翻譯為撒奇萊雅語。",
+            "嚴格禁止：輸出英文、日文、韓文或其他語言。",
+            "只允許：撒奇萊雅語輸出（拉丁字母拼寫）。",
+            "若某個詞彙無法確定撒奇萊雅語對應，可保留該詞原文並加括號。",
+        ]
+    else:
+        lines = [
+            "你是撒奇萊雅語（Sakizaya）翻譯專家。",
+            "撒奇萊雅語是台灣原住民族語言，ISO 639-3 代碼：szy。",
+            "你的任務：將撒奇萊雅語翻譯為中文。",
+            "只允許：繁體中文輸出。",
+        ]
 
     if examples:
-        lines.append("以下是參考例句：")
+        lines.append("\n以下是參考例句（請依照這些例句的風格翻譯）：")
         for i, ex in enumerate(examples, 1):
             szy_text = ex.get("szy", "").strip()
             zh_text = ex.get("zh", "").strip()
@@ -63,10 +78,8 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
                 lines.append(f"  例句{i}：撒奇萊雅語：{szy_text} ↔ 中文：{zh_text}")
         lines.append("")
 
-    lines.append(f"請翻譯以下{direction_label}為{target_label}：")
+    lines.append(f"請將以下{direction_label}翻譯為{target_label}，直接輸出結果，不要解釋：")
     lines.append(text)
-    lines.append("")
-    lines.append("直接輸出翻譯結果，不要解釋。")
 
     return "\n".join(lines)
 
@@ -98,10 +111,13 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
+        "think": False,
         "options": {
             "temperature": 0.2,
             "top_p": 0.9,
             "num_predict": 512,
+            "repeat_penalty": 1.3,
+            "repeat_last_n": 64,
         },
     }
 

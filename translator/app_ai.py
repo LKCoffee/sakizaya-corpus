@@ -59,7 +59,7 @@ def run_translation(text: str) -> tuple[str, str, str]:
     lang = detect_lang(text)
 
     # 2. RAG 例句
-    top_examples = gather_rag_examples(DB_PATH, text, lang=lang, top_k=TOP_K_EXAMPLES)
+    top_examples = gather_rag_examples(DB_PATH, text, lang=lang, top_k=TOP_K_EXAMPLES, min_score=0.0)
 
     # 3. 呼叫 LLM 翻譯
     ai_result = translate_with_context(text, lang, top_examples)

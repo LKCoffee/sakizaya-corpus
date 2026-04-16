@@ -19,6 +19,17 @@ if errorlevel 1 (
     exit /b 1
 )
 python --version
+python -c "import sys; exit(0 if sys.version_info >= (3,10) else 1)" >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo [Error] Python 3.10 or above is required.
+    echo Current version:
+    python --version
+    echo Please install Python 3.10+ from: https://python.org
+    echo.
+    pause
+    exit /b 1
+)
 echo Python 已就緒。
 echo.
 
