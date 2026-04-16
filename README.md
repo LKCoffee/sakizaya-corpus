@@ -27,6 +27,9 @@
 
 ### 快速開始
 
+**一般使用者（推薦）：** 右上角 `Code` → `Download ZIP` → 解壓縮 → 進入 `translator/` 資料夾
+
+**開發者 / 進階用戶：**
 ```bash
 git clone https://github.com/LKCoffee/sakizaya-corpus.git
 cd sakizaya-corpus
@@ -35,8 +38,6 @@ python query.py word belih
 ```
 
 ### 翻譯機（離線使用）
-
-**下載方式（推薦）：** 右上角 `Code` → `Download ZIP` → 解壓縮 → 進入 `translator/` 資料夾
 
 安裝說明：[translator/INSTALL.md](translator/INSTALL.md)
 
@@ -82,6 +83,9 @@ https://github.com/LKCoffee/sakizaya-corpus
 
 ### Quick Start
 
+**Most users:** Click `Code` → `Download ZIP` (top right) → unzip → open the `translator/` folder
+
+**Developers / CLI:**
 ```bash
 git clone https://github.com/LKCoffee/sakizaya-corpus.git
 cd sakizaya-corpus
@@ -90,8 +94,6 @@ python query.py word belih
 ```
 
 ### Translator (Offline Use)
-
-**Download:** Click `Code` → `Download ZIP` (top right) → unzip → open the `translator/` folder
 
 Setup guide: [translator/INSTALL.md](translator/INSTALL.md)
 

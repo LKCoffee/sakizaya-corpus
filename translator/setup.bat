@@ -64,9 +64,11 @@ echo Ollama 已就緒。
 echo.
 
 :: ── Step 4：下載 AI 模型 ─────────────────────
-echo [4/5] 正在下載 AI 模型（~1GB），請稍候...
-echo       這一步需要幾分鐘，請保持網路連線。
-ollama pull qwen2.5:1.5b
+echo [4/5] 正在下載 AI 模型（qwen3.5，約 7GB）...
+echo       視網路速度需要 20 至 60 分鐘，下載中請勿關閉此視窗。
+echo       下方會出現進度條，顯示「success」即為完成。
+echo.
+ollama pull qwen3.5
 if errorlevel 1 (
     echo.
     echo [警告] 模型下載失敗。AI 版功能將無法使用。
