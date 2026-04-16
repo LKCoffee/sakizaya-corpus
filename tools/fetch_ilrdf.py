@@ -136,7 +136,7 @@ _POS_PREFIXES: list[tuple[str, str]] = [
     ("miti", "v"), ("pita", "v"), ("miku", "v"), ("misu", "v"),
     ("mili", "v"), ("pili", "v"), ("misi", "v"),
     ("mi", "v"), ("ma", "v"), ("mu", "v"), ("pa", "v"),
-    ("pi", "v"), ("ci", "pn"),
+    ("pi", "v"),
 ]
 
 _POS_SUFFIXES: list[tuple[str, str]] = [
@@ -214,9 +214,11 @@ def main(dry_run: bool = False, limit: int | None = None,
         print(f"找不到資料庫：{DB}")
         return
 
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+
     # --infer-pos-only：只跑形態推論，不呼叫 API
     if infer_pos_only:
-        conn = sqlite3.connect(DB)
         rows = conn.execute("SELECT id, word FROM lexicon WHERE pos IS NULL").fetchall()
         updated = 0
         for wid, word in rows:
@@ -228,9 +230,6 @@ def main(dry_run: bool = False, limit: int | None = None,
         conn.close()
         log.info(f"infer-pos-only: updated {updated}/{len(rows)}")
         return
-
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
 
     pending = get_pending_words(conn, overwrite_examples=overwrite_examples)
     if limit:
