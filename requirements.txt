@@ -1,0 +1,7 @@
+# 撒奇萊雅語翻譯工具 — Python 依賴
+# Lite 版（app.py / app_tk.py）只需 gradio
+# AI 版（app_ai.py）額外需要 requests（Ollama HTTP）
+# tkinter 版（app_tk.py）無外部依賴（stdlib only）
+
+gradio==6.12.0
+requests==2.32.5
