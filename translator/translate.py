@@ -234,6 +234,38 @@ def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
+def gather_rag_examples(
+    db_path: str,
+    text: str,
+    lang: str,
+    top_k: int = 5,
+    min_score: float = 0.05,
+) -> list[dict]:
+    """
+    切句 → 逐句 find_similar → 去重 → 取 top_k。
+    Lite 版（app.py）和 AI 版（app_ai.py）共用。
+    """
+    sentences = [s for s in split_sentences(text) if s.strip()]
+    if not sentences:
+        return []
+
+    per_k = top_k if len(sentences) == 1 else 3
+    seen: set = set()
+    hits: list[dict] = []
+
+    for sent in sentences[:8]:
+        for r in find_similar(db_path, sent, lang=lang, top_k=per_k):
+            key = (r.get("szy", ""), r.get("zh", ""))
+            if key not in seen and r.get("score", 0) >= min_score:
+                seen.add(key)
+                hits.append(r)
+        if len(hits) >= top_k * 2:
+            break
+
+    hits.sort(key=lambda x: x["score"], reverse=True)
+    return hits[:top_k]
+
+
 # ──────────────────────────────────────────
 # 簡易 CLI（直接執行時用）
 # ──────────────────────────────────────────

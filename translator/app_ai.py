@@ -8,10 +8,17 @@ app_ai.py — 撒奇萊雅語翻譯機（AI 版）Gradio 介面
     python app_ai.py
 """
 
+import os
 import gradio as gr
 
-from translate import detect_lang, find_similar, split_sentences
+from translate import detect_lang, gather_rag_examples
 from ollama_translate import is_ollama_running, translate_with_context
+
+# DB 路徑：環境變數 SZY_DB，預設 ../sakizaya.db
+DB_PATH = os.environ.get(
+    "SZY_DB",
+    os.path.join(os.path.dirname(__file__), "..", "sakizaya.db"),
+)
 
 # ---------------------------------------------------------------------------
 # 翻譯核心邏輯
@@ -36,14 +43,14 @@ def run_translation(text: str) -> tuple[str, str, str]:
     """
     # 0. Ollama 狀態
     ollama_ok = is_ollama_running()
-    ollama_status = "✅ 已連線" if ollama_ok else "❌ Ollama 未啟動，請先跑 start.bat"
+    ollama_status = "✅ 已連線" if ollama_ok else "❌ Ollama 未啟動，請先安裝並啟動 Ollama（https://ollama.ai）"
 
     if not text or not text.strip():
         return "", "", ollama_status
 
     if not ollama_ok:
         return (
-            "（Ollama 未啟動，無法翻譯。請執行 start.bat 後重試。）",
+            "（Ollama 未啟動，無法翻譯。請確認 Ollama 已安裝並在背景執行（系統匣有圖示），再重新整理頁面。）",
             "",
             ollama_status,
         )
@@ -51,22 +58,8 @@ def run_translation(text: str) -> tuple[str, str, str]:
     # 1. 偵測語言方向
     lang = detect_lang(text)
 
-    # 2. 切句、收集 RAG 例句（去重、取前 TOP_K）
-    sentences = split_sentences(text)
-    seen = set()
-    all_examples: list[dict] = []
-    for sent in sentences:
-        if not sent.strip():
-            continue
-        for ex in find_similar(sent, lang=lang, top_k=TOP_K_EXAMPLES):
-            key = (ex.get("szy", ""), ex.get("zh", ""))
-            if key not in seen:
-                seen.add(key)
-                all_examples.append(ex)
-        if len(all_examples) >= TOP_K_EXAMPLES * 2:
-            break
-
-    top_examples = all_examples[:TOP_K_EXAMPLES]
+    # 2. RAG 例句
+    top_examples = gather_rag_examples(DB_PATH, text, lang=lang, top_k=TOP_K_EXAMPLES)
 
     # 3. 呼叫 LLM 翻譯
     ai_result = translate_with_context(text, lang, top_examples)
@@ -103,7 +96,7 @@ def _format_examples_md(examples: list[dict], lang: str) -> str:
 
 def refresh_ollama_status() -> str:
     """重新檢查 Ollama 狀態（供 Refresh 按鈕使用）。"""
-    return "✅ 已連線" if is_ollama_running() else "❌ Ollama 未啟動，請先跑 start.bat"
+    return "✅ 已連線" if is_ollama_running() else "❌ Ollama 未啟動，請先安裝並啟動 Ollama（https://ollama.ai）"
 
 
 # ---------------------------------------------------------------------------
@@ -115,8 +108,6 @@ def build_ui() -> gr.Blocks:
 
     with gr.Blocks(
         title="撒奇萊雅語翻譯機（AI 版）",
-        theme=gr.themes.Soft(),
-        css=".examples-box { font-size: 0.9em; }",
     ) as demo:
 
         gr.Markdown(
@@ -203,4 +194,6 @@ if __name__ == "__main__":
         server_port=7861,
         share=False,
         inbrowser=True,
+        theme=gr.themes.Soft(),
+        css=".examples-box { font-size: 0.9em; }",
     )
