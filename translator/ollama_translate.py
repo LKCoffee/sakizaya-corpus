@@ -60,6 +60,7 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
             "嚴格禁止：輸出英文、日文、韓文或其他語言。",
             "只允許：撒奇萊雅語輸出（拉丁字母拼寫）。",
             "若某個詞彙無法確定撒奇萊雅語對應，可保留該詞原文並加括號。",
+            "輸出格式：只輸出翻譯結果，一行，翻譯完畢後立即停止，不要添加任何解釋或額外句子。",
         ]
     else:
         lines = [
@@ -67,6 +68,7 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
             "撒奇萊雅語是台灣原住民族語言，ISO 639-3 代碼：szy。",
             "你的任務：將撒奇萊雅語翻譯為中文。",
             "只允許：繁體中文輸出。",
+            "輸出格式：只輸出翻譯結果，一行，翻譯完畢後立即停止，不要添加任何解釋。",
         ]
 
     if examples:
@@ -115,9 +117,10 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
         "options": {
             "temperature": 0.2,
             "top_p": 0.9,
-            "num_predict": 512,
+            "num_predict": 200,
             "repeat_penalty": 1.3,
             "repeat_last_n": 64,
+            "stop": ["\n\n", "---", "注：", "備註：", "說明："],
         },
     }
 
