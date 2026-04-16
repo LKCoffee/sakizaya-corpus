@@ -65,7 +65,12 @@ def run_translation(text: str) -> tuple[str, str, str]:
     ai_result = translate_with_context(text, lang, top_examples)
 
     if not ai_result:
-        ai_result = "（翻譯失敗，請確認 Ollama 模型已載入，或稍後再試。）"
+        # translate_with_context 回傳空字串 = 信心低，語料不足
+        top_score = top_examples[0]["score"] if top_examples else 0
+        if top_score < 0.1:
+            ai_result = "（語料庫對此詞彙覆蓋不足，無法提供可靠翻譯。可參考下方例句自行推敲。）"
+        else:
+            ai_result = "（翻譯失敗，請確認 Ollama 模型已載入，或稍後再試。）"
 
     # 4. 組成參考例句 Markdown
     examples_md = _format_examples_md(top_examples, lang)

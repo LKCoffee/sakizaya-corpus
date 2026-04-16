@@ -60,7 +60,10 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
             "嚴格禁止：輸出英文、日文、韓文或其他語言。",
             "只允許：撒奇萊雅語輸出（拉丁字母拼寫）。",
             "若某個詞彙無法確定撒奇萊雅語對應，可保留該詞原文並加括號。",
-            "輸出格式：只輸出翻譯結果，一行，翻譯完畢後立即停止，不要添加任何解釋或額外句子。",
+            "輸出格式（嚴格遵守，兩行，不多不少）：",
+            "翻譯：<撒奇萊雅語譯文>",
+            "信心：<高|中|低>",
+            "信心判斷標準：高=有例句直接對應；中=部分詞彙有對應；低=多數詞彙無法確定。",
         ]
     else:
         lines = [
@@ -68,7 +71,10 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
             "撒奇萊雅語是台灣原住民族語言，ISO 639-3 代碼：szy。",
             "你的任務：將撒奇萊雅語翻譯為中文。",
             "只允許：繁體中文輸出。",
-            "輸出格式：只輸出翻譯結果，一行，翻譯完畢後立即停止，不要添加任何解釋。",
+            "輸出格式（嚴格遵守，兩行，不多不少）：",
+            "翻譯：<中文譯文>",
+            "信心：<高|中|低>",
+            "信心判斷標準：高=詞義明確；中=部分確定；低=推測成分多。",
         ]
 
     if examples:
@@ -80,10 +86,35 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
                 lines.append(f"  例句{i}：撒奇萊雅語：{szy_text} ↔ 中文：{zh_text}")
         lines.append("")
 
-    lines.append(f"請將以下{direction_label}翻譯為{target_label}，直接輸出結果，不要解釋：")
+    lines.append(f"請將以下{direction_label}翻譯為{target_label}，按上述格式輸出：")
     lines.append(text)
 
     return "\n".join(lines)
+
+
+def _parse_output(raw: str) -> tuple[str, str]:
+    """
+    解析 model 輸出的兩行格式：
+      翻譯：<text>
+      信心：<高|中|低>
+    回傳 (translation, confidence)。
+    解析失敗時 confidence = '低'（保守處理）。
+    """
+    translation = ""
+    confidence = "低"
+    for line in raw.splitlines():
+        line = line.strip()
+        if line.startswith("翻譯："):
+            translation = line[3:].strip()
+        elif line.startswith("信心："):
+            c = line[3:].strip()
+            if c in ("高", "中", "低"):
+                confidence = c
+    # fallback：model 沒照格式輸出，把整行當翻譯，信心設低
+    if not translation and raw.strip():
+        translation = raw.strip()
+        confidence = "低"
+    return translation, confidence
 
 
 def _deloop(text: str) -> str:
@@ -147,8 +178,12 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
         resp = requests.post(OLLAMA_URL, json=payload, timeout=60)
         resp.raise_for_status()
         data = resp.json()
-        result = data.get("response", "").strip()
-        return _deloop(result)
+        raw = data.get("response", "").strip()
+        translation, confidence = _parse_output(_deloop(raw))
+        if confidence == "低":
+            return ""   # 信心低：不輸出，讓 UI 顯示「語料不足」
+        conf_label = "★★★" if confidence == "高" else "★★☆"
+        return f"{translation}　[{conf_label}]"
     except requests.exceptions.ConnectionError:
         print("[ollama_translate] 無法連線到 Ollama，請確認 Ollama 正在執行。")
         return ""
