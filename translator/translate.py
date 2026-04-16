@@ -58,6 +58,7 @@ def lookup_word(db_path: str, word: str) -> dict:
 def lookup_words_in_text(db_path: str, text: str) -> list[dict]:
     """
     把文章拆成 token，逐一查 lexicon，回傳有命中的詞列表。
+    適合撒奇萊雅語輸入（按 word 欄位查）。
     """
     tokens = _tokenize(text)
     results = []
@@ -72,6 +73,71 @@ def lookup_words_in_text(db_path: str, text: str) -> list[dict]:
     return results
 
 
+def lookup_by_meaning(db_path: str, text: str) -> list[dict]:
+    """
+    從 lexicon 表按 meaning_zh 反查（中文 → 撒奇萊雅語方向）。
+    優先回傳「定義命中」（meaning_zh 不含 [例] 前綴），
+    僅在無定義命中時才 fallback 到「例句命中」並加 _match_type 標記。
+    """
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        cur = conn.cursor()
+        direct = []   # meaning_zh 是真正定義（不含 [例]）
+        example = []  # meaning_zh 只是例句
+        seen = set()
+
+        for token in _tokenize(text):
+            if not token:
+                continue
+
+            # 精確比對
+            cur.execute(
+                """
+                SELECT word, meaning_zh, example_szy, example_zh
+                FROM lexicon
+                WHERE meaning_zh = ? COLLATE NOCASE
+                LIMIT 3
+                """,
+                (token,),
+            )
+            for row in cur.fetchall():
+                if row["word"] not in seen:
+                    seen.add(row["word"])
+                    d = dict(row)
+                    d["_match_type"] = "direct"
+                    direct.append(d)
+
+            # 模糊比對（含 [例] 與不含 [例] 分開）
+            cur.execute(
+                """
+                SELECT word, meaning_zh, example_szy, example_zh
+                FROM lexicon
+                WHERE meaning_zh LIKE ? COLLATE NOCASE
+                LIMIT 10
+                """,
+                (f"%{token}%",),
+            )
+            for row in cur.fetchall():
+                if row["word"] not in seen:
+                    seen.add(row["word"])
+                    d = dict(row)
+                    mz = (row["meaning_zh"] or "")
+                    if mz.startswith("[例]") or mz.startswith("【例】"):
+                        d["_match_type"] = "example"
+                        example.append(d)
+                    else:
+                        d["_match_type"] = "direct"
+                        direct.append(d)
+
+        # 有定義命中就只回定義；否則回例句命中（上限 5）
+        if direct:
+            return direct[:10]
+        return example[:5]
+    finally:
+        conn.close()
+
+
 # ──────────────────────────────────────────
 # 3. 相似句搜尋（Jaccard token overlap）
 # ──────────────────────────────────────────
@@ -79,9 +145,18 @@ def lookup_words_in_text(db_path: str, text: str) -> list[dict]:
 def _tokenize(text: str) -> set:
     """
     把文字切成 token set，按空格 + 常見標點分割，過濾空字串。
+    對於多字 CJK token（如「這座山有很多的山豬」），額外展開成個別漢字，
+    讓單字中文查詢（如「豬」）能命中包含該字的長句。
     """
+    _CJK = re.compile(r"[\u4e00-\u9fff\u3400-\u4dbf]")
     parts = re.split(r"[\s\.,;:!?。，、；：！？「」『』【】()（）\-/]+", text.lower())
-    return set(p for p in parts if p)
+    tokens = set(p for p in parts if p)
+    # 展開多字 CJK token → 加入個別漢字
+    extra = set()
+    for t in tokens:
+        if len(t) >= 2 and _CJK.search(t):
+            extra.update(c for c in t if _CJK.match(c))
+    return tokens | extra
 
 
 def _jaccard(set_a: set, set_b: set) -> float:
@@ -114,17 +189,29 @@ def find_similar(
     """
     query_tokens = _tokenize(text)
 
+    compare_col = "zh" if lang == "zh" else "szy"
+
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
         cur = conn.cursor()
-        cur.execute("SELECT szy, zh FROM parallel")
+        # Performance: pre-filter rows containing at least one query token.
+        # CJK single chars are meaningful → include them; skip short Latin tokens (particles).
+        _CJK = re.compile(r"[\u4e00-\u9fff\u3400-\u4dbf]")
+        long_tokens = [t for t in query_tokens if len(t) >= 2 or _CJK.search(t)]
+        if long_tokens and len(long_tokens) <= 6:
+            conds = " OR ".join([f"{compare_col} LIKE ?" for _ in long_tokens])
+            params = [f"%{t}%" for t in long_tokens]
+            cur.execute(
+                f"SELECT szy, zh FROM parallel WHERE {conds} AND LENGTH(szy) >= 15 AND LENGTH(zh) >= 5 AND szy NOT LIKE '%http%' AND zh NOT LIKE '%http%' LIMIT 2000", params
+            )
+        else:
+            cur.execute("SELECT szy, zh FROM parallel WHERE LENGTH(szy) >= 15 AND LENGTH(zh) >= 5 AND szy NOT LIKE '%http%' AND zh NOT LIKE '%http%' LIMIT 5000")
         rows = cur.fetchall()
     finally:
         conn.close()
 
     scored = []
-    compare_col = "zh" if lang == "zh" else "szy"
     for row in rows:
         corpus_text = row[compare_col] or ""
         corpus_tokens = _tokenize(corpus_text)
@@ -168,7 +255,7 @@ if __name__ == "__main__":
 
     print("\n── 相似例句 ──")
     for r in find_similar(db, query, lang, top_k=5):
-        print(f"  [{r['score']:.4f}] szy: {r['szy']} ↔ zh: {r['zh']}")
+        print(f"  [{r['score']:.4f}] szy: {r['szy']} <-> zh: {r['zh']}")
 
     print("\n── 詞典查詢 ──")
     entry = lookup_word(db, query.strip())
