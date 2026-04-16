@@ -170,6 +170,14 @@ def lookup_by_meaning(db_path: str, text: str) -> list[dict]:
 # 3. 相似句搜尋（Jaccard token overlap）
 # ──────────────────────────────────────────
 
+# 撒奇萊雅語文法粒子（格標記、限定詞）——單獨出現沒有語義辨別力，
+# 在 szy→szy Jaccard 比對時剔除，避免 'ko' 等高頻詞造成假命中。
+_SZY_STOP: set = {
+    "a", "u", "i", "sa", "nu", "ku", "tu", "ko",
+    "na", "ka", "ci", "han", "saan", "naw",
+}
+
+
 def _tokenize(text: str) -> set:
     """
     把文字切成 token set，按空格 + 常見標點分割，過濾空字串。
@@ -239,11 +247,21 @@ def find_similar(
     finally:
         conn.close()
 
+    # szy→zh 方向：剔除文法粒子，防止 'ko'/'ku' 等造成假命中
+    if lang == "szy":
+        effective_query = query_tokens - _SZY_STOP
+        if not effective_query:          # 查詢全是粒子，無法比對
+            return []
+    else:
+        effective_query = query_tokens
+
     scored = []
     for row in rows:
         corpus_text = row[compare_col] or ""
         corpus_tokens = _tokenize(corpus_text)
-        score = _jaccard(query_tokens, corpus_tokens)
+        if lang == "szy":
+            corpus_tokens -= _SZY_STOP
+        score = _jaccard(effective_query, corpus_tokens)
         scored.append({"szy": row["szy"], "zh": row["zh"], "score": round(score, 4)})
 
     scored.sort(key=lambda x: x["score"], reverse=True)
