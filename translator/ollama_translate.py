@@ -5,8 +5,13 @@ ollama_translate.py — Ollama LLM 翻譯層（AI 版）
 依賴：requests（標準函式庫外唯一依賴）
 """
 
+import re
 import requests
 import json
+
+# 模型偶爾無視 no-paren prompt，在 szy 輸出裡夾中文解釋如「kapi（咖啡）」。
+# 短括號（≤8 字）一律剝除；保留長括號以防誤傷合法引用。
+_PAREN_RE = re.compile(r"[（(][^）)]{1,8}[）)]")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 # 預設用 qwen3.5:latest；可用環境變數 OLLAMA_MODEL 覆蓋（e.g., qwen2.5:1.5b）
@@ -187,6 +192,9 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
         data = resp.json()
         raw = data.get("response", "").strip()
         translation, confidence = _parse_output(_deloop(raw))
+        translation = _PAREN_RE.sub("", translation).strip()
+        if not translation:
+            return ""
         if confidence == "低":
             return ""   # 信心低：不輸出，讓 UI 顯示「語料不足」
         conf_label = "★★★" if confidence == "高" else "★★☆"
