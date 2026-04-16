@@ -262,6 +262,34 @@ def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
+def classify_query_type(text: str) -> str:
+    """
+    估計查詢詞的語言類型，用於顯示適當的無結果提示。
+    回傳 'modern'、'abstract' 或 'traditional'。
+    """
+    modern_markers = re.compile(
+        r"(電腦|手機|網路|網站|電視|汽車|飛機|機車|捷運|高鐵|冷氣|冰箱|"
+        r"洗衣機|微波爐|相機|印表機|耳機|充電|電池|電梯|"
+        r"臉書|youtube|ig|line|tiktok|google|app|ai|"
+        r"人工智慧|機器人|雲端|程式|軟體|區塊鏈|加密貨幣|"
+        r"超市|便利商店|網購|外送|信用卡|提款機|"
+        r"醫院|疫苗|口罩|隔離|確診|pcr|"
+        r"選舉|民主|環保|氣候變遷|碳排放|"
+        r"電競|netflix|動漫|手遊|網紅|youtuber)",
+        re.IGNORECASE,
+    )
+    abstract_markers = re.compile(
+        r"(自由|平等|正義|民主|哲學|倫理|道德|邏輯|"
+        r"存在|本質|意識|理性|感性|客觀|主觀|"
+        r"宇宙|永恆|無限|意義|目的)"
+    )
+    if modern_markers.search(text):
+        return "modern"
+    if abstract_markers.search(text):
+        return "abstract"
+    return "traditional"
+
+
 def gather_rag_examples(
     db_path: str,
     text: str,

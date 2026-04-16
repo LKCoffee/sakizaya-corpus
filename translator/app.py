@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
 import gradio as gr
-from translate import detect_lang, find_similar, split_sentences, lookup_words_in_text, lookup_by_meaning, gather_rag_examples
+from translate import detect_lang, find_similar, split_sentences, lookup_words_in_text, lookup_by_meaning, gather_rag_examples, classify_query_type
 
 # DB 路徑：環境變數 SZY_DB，預設 ../sakizaya.db
 DB_PATH = os.environ.get(
@@ -55,7 +55,11 @@ def query_handler(text: str):
             lines.append(f"【{r['score']:.2f}】 {szy_short}  /  {zh_short}")
         similar_out = "\n".join(lines) if lines else "（無相似例句）"
     else:
-        similar_out = "（無相似例句）"
+        qtype = classify_query_type(text)
+        if qtype == "modern":
+            similar_out = "（現代詞彙，語料庫無相似例句）"
+        else:
+            similar_out = "（無相似例句）"
 
     # ── 3. 詞典查詢 ──
     if lang == "zh":
@@ -75,7 +79,13 @@ def query_handler(text: str):
             dict_lines.append(line)
         dict_out = "\n".join(dict_lines)
     else:
-        dict_out = "（詞典無收錄）"
+        qtype = classify_query_type(text)
+        if qtype == "modern":
+            dict_out = "（此詞屬現代概念，撒奇萊雅語語料暫無收錄）"
+        elif qtype == "abstract":
+            dict_out = "（此詞為抽象概念，現有語料可能無直接對應詞）"
+        else:
+            dict_out = "（詞典無收錄，可嘗試查詢相近詞彙）"
 
     return detection_out, similar_out, dict_out
 
