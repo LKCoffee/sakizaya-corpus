@@ -368,20 +368,18 @@ def _en_to_sakizaya(text: str) -> str | None:
     """
     s = text.lower().strip()
 
-    # 多字元替換（順序很重要，長的先）
+    # 多字元替換（順序很重要：長模式先、單字元後）
     replacements = [
-        ("tion", "siyun"),
-        ("sion", "siyun"),
-        ("tion", "siyun"),
-        ("ph",   "p"),
-        ("ch",   "c"),
-        ("sh",   "s"),
-        ("th",   "t"),
-        ("ing",  "ing"),
-        ("qu",   "kw"),
-        ("x",    "ks"),
-        ("v",    "b"),
-        ("q",    "k"),
+        ("ph",   "p"),     # phone → pone
+        ("ch",   "c"),     # church → curc
+        ("sh",   "s"),     # shop → sop
+        ("th",   "t"),     # the → te
+        ("qu",   "kw"),    # question → kwestion（先於 tion）
+        ("tion", "siyun"), # question → kwesiyun
+        ("sion", "siyun"), # vision → bisiyun
+        ("x",    "ks"),    # box → boks
+        ("v",    "b"),     # video → bideo
+        ("q",    "k"),     # qi → ki（qu 已處理過）
     ]
     for old, new in replacements:
         s = s.replace(old, new)
