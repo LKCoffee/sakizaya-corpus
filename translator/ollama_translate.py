@@ -157,6 +157,13 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
     if not text or not text.strip():
         return ""
 
+    # szy→zh 無 RAG 防線：撒奇萊雅語→中文方向時，若 RAG 找不到任何有分數的例句，
+    # 模型單靠英譯-再-中譯的路徑幻覺率太高 → 直接放棄輸出，讓 UI 顯示「語料不足」。
+    if lang == "szy":
+        top_score = max((ex.get("score", 0) for ex in examples), default=0)
+        if top_score == 0:
+            return ""
+
     prompt = build_prompt(text, lang, examples)
 
     payload = {
