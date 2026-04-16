@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
 import gradio as gr
-from translate import detect_lang, find_similar, split_sentences, lookup_words_in_text, lookup_by_meaning, gather_rag_examples, classify_query_type
+from translate import detect_lang, find_similar, split_sentences, lookup_words_in_text, lookup_by_meaning, gather_rag_examples, classify_query_type, suggest_transliteration
 
 # DB 路徑：環境變數 SZY_DB，預設 ../sakizaya.db
 DB_PATH = os.environ.get(
@@ -82,6 +82,9 @@ def query_handler(text: str):
         qtype = classify_query_type(text)
         if qtype == "modern":
             dict_out = "（此詞屬現代概念，撒奇萊雅語語料暫無收錄）"
+            suggestion = suggest_transliteration(text)
+            if suggestion:
+                dict_out += f"\n\n💡 現代詞彙音譯建議：{suggestion} （僅供參考，非正式族語）"
         elif qtype == "abstract":
             dict_out = "（此詞為抽象概念，現有語料可能無直接對應詞）"
         else:

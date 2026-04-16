@@ -23,7 +23,7 @@ DB_PATH = str(os.environ.get("SZY_DB", BASE / "sakizaya.db"))
 # ── 匯入核心引擎 ────────────────────────────────────────────────
 sys.path.insert(0, str(Path(__file__).parent))
 try:
-    from translate import detect_lang, find_similar, lookup_word, lookup_words_in_text, lookup_by_meaning, gather_rag_examples, classify_query_type
+    from translate import detect_lang, find_similar, lookup_word, lookup_words_in_text, lookup_by_meaning, gather_rag_examples, classify_query_type, suggest_transliteration
 except ImportError:
     # 若找不到 translate.py，顯示錯誤
     import tkinter.messagebox as mb
@@ -166,6 +166,9 @@ class SakizayaApp(tk.Tk):
                 qtype = classify_query_type(text)
                 if qtype == "modern":
                     dict_lines.append("（現代詞彙，撒奇萊雅語語料暫無收錄）")
+                    suggestion = suggest_transliteration(text)
+                    if suggestion:
+                        dict_lines.append(f"\n💡 音譯建議：{suggestion}（僅供參考）")
                 elif qtype == "abstract":
                     dict_lines.append("（抽象概念，現有語料可能無直接對應詞）")
                 else:

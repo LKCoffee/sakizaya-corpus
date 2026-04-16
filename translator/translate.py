@@ -323,6 +323,114 @@ def gather_rag_examples(
 
 
 # ──────────────────────────────────────────
+# 5. 現代詞彙音譯建議
+# ──────────────────────────────────────────
+
+_MODERN_LOANWORDS: dict = {
+    # 科技
+    "AI": "ei-ai",
+    "人工智慧": "ai",
+    "電腦": "telnaw",
+    "手機": "soci",
+    "網路": "netuwaku",
+    "網際網路": "intaneti",
+    "臉書": "fesibuku",
+    "YouTube": "yutiyubu",
+    "Line": "lain",
+    "Google": "gugulu",
+    "Instagram": "instaguam",
+    "TikTok": "tiktok",
+    "Email": "imeilu",
+    "App": "epi",
+    "電視": "telebisiyun",
+    "冰箱": "refizereyita",
+    "洗衣機": "wasinci",
+    "冷氣": "eakon",
+    "汽車": "kaci",
+    "機車": "motosaikuru",
+    "腳踏車": "bayisisikuru",
+    "飛機": "helikopita",
+    "火車": "censha",
+    "捷運": "emuti",
+    "高鐵": "biyun",
+    "醫院": "hospitaru",
+    "超市": "supamaketi",
+    "咖啡": "kapi",
+    "比特幣": "bitokoyin",
+    "區塊鏈": "burokucen",
+}
+
+
+def _en_to_sakizaya(text: str) -> str | None:
+    """
+    把英文單字音譯成撒奇萊雅語拼寫（簡易規則）。
+    輸出長度 > 10 字元時視為不可靠，回傳 None。
+    """
+    s = text.lower().strip()
+
+    # 多字元替換（順序很重要，長的先）
+    replacements = [
+        ("tion", "siyun"),
+        ("sion", "siyun"),
+        ("tion", "siyun"),
+        ("ph",   "p"),
+        ("ch",   "c"),
+        ("sh",   "s"),
+        ("th",   "t"),
+        ("ing",  "ing"),
+        ("qu",   "kw"),
+        ("x",    "ks"),
+        ("v",    "b"),
+        ("q",    "k"),
+    ]
+    for old, new in replacements:
+        s = s.replace(old, new)
+
+    # 去掉非字母字元（數字、底線等）
+    s = re.sub(r"[^a-z]", "", s)
+
+    if not s:
+        return None
+
+    # 若以輔音結尾，補 u
+    vowels = set("aeiou")
+    if s[-1] not in vowels:
+        s += "u"
+
+    if len(s) > 10:
+        return None
+
+    return s
+
+
+def suggest_transliteration(text: str) -> str | None:
+    """
+    回傳現代詞彙的撒奇萊雅語音譯建議。
+    優先查對照表；查不到且輸入為英文時做簡易音譯。
+    無可靠建議時回傳 None。
+    """
+    if not text:
+        return None
+
+    # 先查對照表（大小寫不敏感）
+    key_lower = text.strip().lower()
+    for k, v in _MODERN_LOANWORDS.items():
+        if k.lower() == key_lower:
+            return v
+
+    # fallback：只對純英文（不含 CJK）做音譯
+    _CJK = re.compile(r"[\u4e00-\u9fff\u3400-\u4dbf]")
+    if _CJK.search(text):
+        return None  # 中文查不到，不做猜測
+
+    # 確認至少含一個英文字母
+    if not re.search(r"[a-zA-Z]", text):
+        return None
+
+    return _en_to_sakizaya(text)
+
+
+# ──────────────────────────────────────────
 # 簡易 CLI（直接執行時用）
 # ──────────────────────────────────────────
 
