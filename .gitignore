@@ -37,3 +37,8 @@ desktop.ini
 .env
 venv/
 env/
+
+# PyInstaller build artifacts
+dist/
+build/
+*.spec
