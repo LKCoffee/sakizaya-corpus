@@ -10,11 +10,14 @@
 - **首個開放撒奇萊雅語離線語料庫**
   撒奇萊雅語（Sakizaya）為台灣原住民族語之一，本專案為其首個可離線使用的開放語料庫。
 
-- **70,000+ 平行句對（撒奇萊雅語 ↔ 中文）**
-  來源：FormosanBank 語料 + 撒奇萊雅語 Wikipedia dump（szy.wikipedia.org）。
+- **90,471 平行句對（撒奇萊雅語 ↔ 中文）**
+  來源：FormosanBank 語料 + 撒奇萊雅語 Wikipedia dump（szy.wikipedia.org）+ ALR 朗聲四起平台 + 本地文件 / 母語人士。
 
-- **6,000+ 詞條（含 ILRDF 辭典例句）**
+- **6,173 詞條（含 ILRDF 辭典例句）**
   整合原住民族語言研究發展基金會（ILRDF）離線 XML 詞典，含詞性標記與原始例句。
+
+- **5,363 篇 Sakizaya Wikipedia 單語文本**（在 `sakizaya.db` 的 `articles` + `sentences` 表）
+  來源：FormosanBank Sakizaya Wikipedia XML 語料，經正字法品質處理（CC BY-SA 4.0）。
 
 - **離線查詢工具 `query.py`**
   支援中文關鍵字查詞、撒奇萊雅語全文搜尋、統計摘要。無需網路連線。
@@ -67,6 +70,8 @@ bash build_all.sh
 
 ## 感謝
 
-- **FormosanBank**（台大語言學研究所）：提供台灣南島語語料基礎資料
-- **ILRDF 原住民族語言研究發展基金會**：提供撒奇萊雅語辭典 XML 授權
-- **撒奇萊雅語 Wikipedia 貢獻者**（szy.wikipedia.org）：提供自由授權的平行語料來源
+- **FormosanBank**（NTU Linguistics + Boston College + MGH IHP 跨國合作）：提供 Sakizaya Wikipedia XML 語料（5,363 篇，CC BY-SA 4.0）
+- **ILRDF 原住民族語言研究發展基金會**：提供撒奇萊雅語辭典 XML（6,173 詞條，CC BY-NC 4.0）
+- **撒奇萊雅語 Wikipedia 貢獻者**（szy.wikipedia.org，Wikimedia Foundation）：提供自由授權的平行語料來源（CC BY-SA 4.0）
+- **ALR 朗聲四起平台**（政大原住民族研究中心維護）：215 對全國語文競賽撒奇萊雅語朗讀文章平行句對
+- **本地文件與母語人士**：補充語料與例句

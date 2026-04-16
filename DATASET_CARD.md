@@ -15,11 +15,12 @@ size_categories:
 
 ## Dataset Description
 
-The Sakizaya Language Corpus is a parallel text and lexicon dataset for the Sakizaya language (ISO 639-3: `szy`), an Austronesian language indigenous to the Hualien coastal plain of Taiwan. Sakizaya is a critically endangered language with an estimated few hundred fluent speakers remaining.
+The Sakizaya Language Corpus is a parallel text, lexicon, and monolingual dataset for the Sakizaya language (ISO 639-3: `szy`), an Austronesian language indigenous to the Hualien coastal plain of Taiwan. Sakizaya is a critically endangered language with an estimated few hundred fluent speakers remaining.
 
 This dataset contains:
-- **59,512 parallel sentence pairs** (Sakizaya ↔ Traditional Chinese)
-- **6,173 lexicon entries** with part-of-speech, definitions, confidence scores, and usage examples
+- **90,471 parallel sentence pairs** (Sakizaya ↔ Traditional Chinese) — in `parallel.csv`
+- **6,173 lexicon entries** with part-of-speech, definitions, confidence scores, and usage examples — in `lexicon.csv`
+- **5,363 Sakizaya Wikipedia articles** with sentence-level segmentation — in `sakizaya.db` tables `articles` + `sentences` (source_type `formosanbank_wiki`, sourced from FormosanBank's Sakizaya Wikipedia XML corpus)
 
 The corpus is intended to support NLP research, machine translation development, and language documentation efforts for low-resource indigenous languages.
 
@@ -32,9 +33,11 @@ The corpus is intended to support NLP research, machine translation development,
 
 ## Data Sources
 
-- **ILRDF (Indigenous Languages Research and Development Foundation, Taiwan)** — official Sakizaya language materials and educational texts
-- **Wikipedia (Sakizaya-language articles)** — encyclopedic content scraped and aligned
-- **Local documents** — supplementary texts from community and educational sources
+- **FormosanBank** (joint project by NTU Linguistics, Boston College, MGH Institute of Health Professions) — Sakizaya Wikipedia XML corpus (5,363 articles with orthography QC). License: CC BY-SA 4.0. https://github.com/FormosanBank/FormosanBank
+- **szy.Wikipedia (Wikimedia Foundation)** — Sakizaya-language encyclopedic articles (also accessed directly via Wikipedia dump and web scraping for parallel text extraction). License: CC BY-SA 4.0.
+- **ILRDF (Indigenous Languages Research and Development Foundation, Taiwan / 原住民族語言研究發展基金會)** — Sakizaya e-dictionary (lexicon entries with examples). License: CC BY-NC 4.0. https://e-dictionary.ilrdf.org.tw
+- **ALR "朗聲四起" (Aboriginal Language Revitalization Platform)** — 215 parallel pairs from Sakizaya-language articles authored for the National Language Competition. Maintained by NCCU Center for Aboriginal Studies (政大原民中心) under Taiwan MOE. https://alr.alcd.center
+- **Local documents & community informants** — supplementary texts contributed by Sakizaya speakers and community sources
 
 ## Dataset Structure
 
@@ -63,6 +66,29 @@ Word-level lexicon with grammatical and semantic annotations.
 | `source` | string | Data source identifier |
 | `example_szy` | string | Example sentence in Sakizaya (may be null) |
 | `example_zh` | string | Example sentence in Traditional Chinese (may be null) |
+
+### `articles` (in `sakizaya.db`)
+
+Article-level metadata for Sakizaya Wikipedia pages processed from FormosanBank XML corpus.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | integer | Unique article identifier |
+| `title` | string | Article title |
+| `source_url` | string | Original Wikipedia URL (from FormosanBank citation field) |
+| `copyright` | string | Copyright notice (typically `CC BY-SA`) |
+| `source_type` | string | Source identifier: `formosanbank_wiki` (FormosanBank Sakizaya Wikipedia XML) or `local_txt` (local supplementary texts) |
+
+### `sentences` (in `sakizaya.db`)
+
+Sentence-level monolingual Sakizaya text, tied to `articles` via `article_id`.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | integer | Unique sentence identifier |
+| `article_id` | integer | Foreign key to `articles.id` |
+| `sent_idx` | integer | Sentence index within source article |
+| `text` | string | Sakizaya sentence text (standard orthography preferred, falls back to original form if standard unavailable) |
 
 ## Usage Example
 
