@@ -5,6 +5,17 @@ Lite + AI 版共用。只使用標準庫（sqlite3、re）。
 
 import sqlite3
 import re
+import json as _json
+from pathlib import Path
+
+
+def _load_aliases() -> dict:
+    """載入 search_aliases.json，找不到時回傳空 dict。"""
+    p = Path(__file__).parent / "search_aliases.json"
+    if p.exists():
+        with open(p, encoding="utf-8") as f:
+            return _json.load(f)
+    return {}
 
 
 # ──────────────────────────────────────────
@@ -129,6 +140,23 @@ def lookup_by_meaning(db_path: str, text: str) -> list[dict]:
                     else:
                         d["_match_type"] = "direct"
                         direct.append(d)
+
+        # 如果沒有任何命中，嘗試同義詞別名
+        if not direct and not example:
+            aliases = _load_aliases()
+            for token in _tokenize(text):
+                for alias in aliases.get(token, []):
+                    cur.execute(
+                        "SELECT word, meaning_zh, example_szy, example_zh FROM lexicon "
+                        "WHERE meaning_zh LIKE ? COLLATE NOCASE LIMIT 5",
+                        (f"%{alias}%",),
+                    )
+                    for row in cur.fetchall():
+                        if row["word"] not in seen:
+                            seen.add(row["word"])
+                            d = dict(row)
+                            d["_match_type"] = "alias"
+                            direct.append(d)
 
         # 有定義命中就只回定義；否則回例句命中（上限 5）
         if direct:
