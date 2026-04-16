@@ -86,6 +86,25 @@ def build_prompt(text: str, lang: str, examples: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _deloop(text: str) -> str:
+    """偵測並截斷重複短語（逗號分隔段落版本）。"""
+    # 先嘗試按逗號分段找重複
+    parts = [p.strip() for p in text.replace("，", ",").split(",")]
+    if len(parts) > 3:
+        seen = []
+        for i, part in enumerate(parts):
+            if part in seen[-4:]:           # 同樣片段出現在最近 4 段中
+                return ", ".join(seen).rstrip(", 、，")
+            seen.append(part)
+    # fallback：連續重複字元序列（無分隔符）
+    import re as _re
+    m = _re.search(r"(.{6,}?)\1{2,}", text)
+    if m:
+        end = m.start() + len(m.group(1)) * 2
+        return text[:end].rstrip(", 、，")
+    return text
+
+
 def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
     """
     用 examples 當 few-shot context，請 Ollama 翻譯 text。
@@ -118,8 +137,8 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
             "temperature": 0.2,
             "top_p": 0.9,
             "num_predict": 200,
-            "repeat_penalty": 1.3,
-            "repeat_last_n": 64,
+            "repeat_penalty": 1.6,
+            "repeat_last_n": 128,
             "stop": ["\n\n", "---", "注：", "備註：", "說明："],
         },
     }
@@ -129,7 +148,7 @@ def translate_with_context(text: str, lang: str, examples: list[dict]) -> str:
         resp.raise_for_status()
         data = resp.json()
         result = data.get("response", "").strip()
-        return result
+        return _deloop(result)
     except requests.exceptions.ConnectionError:
         print("[ollama_translate] 無法連線到 Ollama，請確認 Ollama 正在執行。")
         return ""
