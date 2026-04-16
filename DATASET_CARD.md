@@ -133,3 +133,8 @@ This dataset is released under the [Creative Commons Attribution-NonCommercial-S
 - **ShareAlike** — If you remix or build upon the material, you must distribute your contributions under the same license.
 
 Source materials from ILRDF are used in accordance with their open educational licensing terms.
+
+## Acknowledgments / 協助單位
+
+- 財團法人花蓮縣帝瓦伊撒耘文化藝術基金會
+- 希羽未來有限公司

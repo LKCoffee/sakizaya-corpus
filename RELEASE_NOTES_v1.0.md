@@ -1,7 +1,15 @@
-# Sakizaya Corpus — Release Notes v1.0.0
+# Sakizaya Corpus — Release Notes
 
-**Version:** v1.0.0
-**Release Date:** 2026-04-15
+## v1.1.0 — 2026-04-16
+
+- 文件數字對齊 DB 實測（90,471 / 6,173 / 5,363）
+- AI 版翻譯品質修補：`_SZY_STOP` 停用詞過濾、`repeat_penalty` 2.0、szy→zh 無 RAG 防線、括號後處理 regex
+- DATASET_CARD 補上 `articles` + `sentences` 表 schema（FormosanBank Wikipedia XML 來源）
+- 新增協助單位：財團法人花蓮縣帝瓦伊撒耘文化藝術基金會、希羽未來有限公司
+
+---
+
+## v1.0.0 — 2026-04-15
 
 ---
 
@@ -75,3 +83,8 @@ bash build_all.sh
 - **撒奇萊雅語 Wikipedia 貢獻者**（szy.wikipedia.org，Wikimedia Foundation）：提供自由授權的平行語料來源（CC BY-SA 4.0）
 - **ALR 朗聲四起平台**（政大原住民族研究中心維護）：215 對全國語文競賽撒奇萊雅語朗讀文章平行句對
 - **本地文件與母語人士**：補充語料與例句
+
+### 協助單位
+
+- **財團法人花蓮縣帝瓦伊撒耘文化藝術基金會**
+- **希羽未來有限公司**
